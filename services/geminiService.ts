@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
-import { BusinessIdea, StitchPromptOptions, StitchPrompt, SketchStep, StoryboardPage, InterviewQuestion, FeedbackAnalysisResult } from '../types';
+import { BusinessIdea, StitchPromptOptions, StitchPrompt, SketchStep, StoryboardPage, InterviewQuestion, FeedbackAnalysisResult, ThreeStepSketchComposite, StoryboardComposite } from '../types';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -725,4 +725,270 @@ export const analyzeInterviewFeedback = async (
         console.error('Error analyzing feedback:', error);
         throw new Error('Failed to analyze interview feedback.');
     }
+};
+
+// Generate composite image for 3-step sketch (single image with 3 panels)
+export const generateThreeStepComposite = async (
+  idea: BusinessIdea,
+  language: keyof typeof languageInstructions,
+  sketchStyle: 'simple' | 'professional' = 'simple'
+): Promise<{ [key: string]: ThreeStepSketchComposite }> => {
+
+  const styleInstructions = {
+    simple: {
+      en: "CHILD-LIKE DRAWING style - very simple, clumsy, wobbly lines, like a 5-8 year old child's drawing",
+      ko: "어린이 그림 스타일 - 매우 단순하고 서툴고 삐뚤빼뚤한 선, 5-8살 어린이가 그린 것처럼",
+      am: "የልጅ ስዕል ዘይቤ - በጣም ቀላል፣ ችኮላ፣ የተዳዳ መስመሮች፣ እንደ 5-8 ዓመት ልጅ ስዕል"
+    },
+    professional: {
+      en: "HAND-DRAWN SKETCH style - professional illustration with clean lines and detailed shading",
+      ko: "손그림 스케치 스타일 - 깔끔한 선과 세밀한 음영의 전문적인 일러스트레이션",
+      am: "በእጅ የተሳለ ንድፍ ዘይቤ - ንጹህ መስመሮች እና ዝርዝር ጥላ ያለው ሙያዊ ምስል"
+    }
+  };
+
+  const prompts = {
+    en: `For the business idea "${idea.title}: ${idea.description}", create 3 distinct variations of a 3-step user flow sketch.
+
+Each variation should show the key screens or interactions a user would have with the product/service. The three steps should represent the beginning, middle, and end of the user journey.
+
+For each variation, provide:
+1. Three step objects, each containing:
+   - title: Short title for the UI screen/step
+   - description: Scenario-based description with 3-4 bullet points focusing on WHAT THE USER DOES and WHY, not specific design details. IMPORTANT: Each bullet point MUST be on a NEW LINE separated by newline characters (\\n).
+
+The output must be a JSON array containing 3 variations. Each variation is an object with a 'steps' array of 3 step objects.
+
+${languageInstructions.en}`,
+    ko: `비즈니스 아이디어 "${idea.title}: ${idea.description}"에 대해 3단계 사용자 흐름 스케치의 3가지 버전을 만드세요.
+
+각 버전은 사용자가 제품/서비스와 가질 주요 화면이나 상호작용을 보여야 합니다. 세 단계는 사용자 여정의 시작, 중간, 끝을 나타내야 합니다.
+
+각 버전에 대해:
+1. 세 개의 단계 객체, 각각 포함:
+   - title: UI 화면/단계의 짧은 제목
+   - description: 특정 디자인 세부사항이 아닌 사용자가 무엇을 하고 왜 하는지에 초점을 맞춘 3-4개의 불렛 포인트가 있는 시나리오 기반 설명. 중요: 각 불렛 포인트는 줄바꿈 문자(\\n)로 구분된 새로운 줄에 있어야 합니다.
+
+출력은 3개의 버전을 포함하는 JSON 배열이어야 합니다. 각 버전은 3개의 단계 객체 배열인 'steps'를 가진 객체입니다.
+
+${languageInstructions.ko}`,
+    am: `ለቢዝነስ ሀሳቡ "${idea.title}: ${idea.description}"፣ የ3-ደረጃ የተጠቃሚ ፍሰት ንድፍ 3 የተለያዩ ልዩነቶችን ይፍጠሩ።
+
+እያንዳንዱ ልዩነት ተጠቃሚው ከምርቱ/አገልግሎቱ ጋር የሚኖረውን ቁልፍ ማያ ገጾች ወይም መስተጋብሮችን ማሳየት አለበት። ሦስቱ ደረጃዎች የተጠቃሚውን ጉዞ መጀመሪያ፣ መካከል እና መጨረሻ መወከል አለባቸው።
+
+ለእያንዳንዱ ልዩነት፦
+1. ሦስት የደረጃ ዕቃዎች፣ እያንዳንዱ የያዘው፦
+   - title: ለ UI ማያ ገጽ/ደረጃ አጭር ርዕስ
+   - description: ልዩ የዲዛይን ዝርዝሮች ሳይሆኑ ተጠቃሚው ምን እንደሚያደርግ እና ለምን እንደሆነ ላይ የሚያተኩር በ3-4 ነጥቦች ላይ የተመሰረተ መግለጫ። አስፈላጊ: እያንዳንዱ ነጥብ በመስመር መቁረጫ ቁምፊዎች (\\n) የተለየ አዲስ መስመር ላይ መሆን አለበት።
+
+ውጤቱ 3 ልዩነቶችን የያዘ JSON ድርድር መሆን አለበት። እያንዳንዱ ልዩነት በ3 የደረጃ ዕቃዎች ድርድር 'steps' ያለው ዕቃ ነው።
+
+${languageInstructions.am}`
+  };
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompts[language],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              steps: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    title: { type: Type.STRING },
+                    description: { type: Type.STRING }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const variations = JSON.parse(response.text.trim()) as { steps: { title: string; description: string }[] }[];
+
+    // Now generate composite images for each variation
+    const imagePrompts = {
+      en: `Create a WEBTOON-STYLE 3-PANEL COMIC STRIP showing the user journey: "${idea.description}".
+
+Style: ${styleInstructions[sketchStyle].en}
+
+The image must show exactly 3 vertical panels arranged like a webtoon/comic:
+Panel 1 (Top): ${variations[0].steps[0].title} - ${variations[0].steps[0].description.split('\n')[0]}
+Panel 2 (Middle): ${variations[0].steps[1].title} - ${variations[0].steps[1].description.split('\n')[0]}
+Panel 3 (Bottom): ${variations[0].steps[2].title} - ${variations[0].steps[2].description.split('\n')[0]}
+
+Important: Create ONE SINGLE IMAGE with all 3 panels arranged vertically like a webtoon. Each panel should be clearly separated with borders or space. Include panel numbers (1, 2, 3) in each panel.`,
+      ko: `사용자 여정을 보여주는 웹툰 스타일 3패널 만화: "${idea.description}".
+
+스타일: ${styleInstructions[sketchStyle].ko}
+
+이미지는 웹툰/만화처럼 배열된 정확히 3개의 수직 패널을 보여야 합니다:
+패널 1 (상단): ${variations[0].steps[0].title} - ${variations[0].steps[0].description.split('\n')[0]}
+패널 2 (중간): ${variations[0].steps[1].title} - ${variations[0].steps[1].description.split('\n')[0]}
+패널 3 (하단): ${variations[0].steps[2].title} - ${variations[0].steps[2].description.split('\n')[0]}
+
+중요: 웹툰처럼 3개의 패널이 모두 수직으로 배열된 하나의 단일 이미지를 만드세요. 각 패널은 테두리나 공간으로 명확하게 구분되어야 합니다. 각 패널에 패널 번호(1, 2, 3)를 포함하세요.`,
+      am: `የተጠቃሚ ጉዞን የሚያሳይ የዌብቱን ዘይቤ 3-ፓነል ኮሚክ: "${idea.description}".
+
+ዘይቤ: ${styleInstructions[sketchStyle].am}
+
+ምስሉ እንደ ዌብቱን/ኮሚክ የተደረደሩ በትክክል 3 ቁመታዊ ፓነሎችን ማሳየት አለበት:
+ፓነል 1 (ላይኛው): ${variations[0].steps[0].title} - ${variations[0].steps[0].description.split('\n')[0]}
+ፓነል 2 (መካከለኛ): ${variations[0].steps[1].title} - ${variations[0].steps[1].description.split('\n')[0]}
+ፓነል 3 (ታች): ${variations[0].steps[2].title} - ${variations[0].steps[2].description.split('\n')[0]}
+
+አስፈላጊ: እንደ ዌብቱን ሁሉም 3 ፓነሎች በቁመት የተደረደሩ አንድ ነጠላ ምስል ይፍጠሩ። እያንዳንዱ ፓነል በድንበሮች ወይም ቦታ በግልጽ መለየት አለበት። በእያንዳንዱ ፓነል ውስጥ የፓነል ቁጥሮች (1, 2, 3) ያካትቱ።`
+    };
+
+    const resultMap: { [key: string]: ThreeStepSketchComposite } = {};
+
+    for (let i = 0; i < variations.length; i++) {
+      try {
+        const base64Url = await generateImage(imagePrompts[language]);
+        resultMap[`v${i}`] = {
+          compositeImageUrl: base64Url,
+          steps: variations[i].steps
+        };
+      } catch (error) {
+        console.error(`Error generating composite image for variation ${i}:`, error);
+        resultMap[`v${i}`] = {
+          compositeImageUrl: null,
+          steps: variations[i].steps
+        };
+      }
+    }
+
+    return resultMap;
+  } catch (error) {
+    console.error('Error generating 3-step composite:', error);
+    throw new Error('Failed to generate 3-step composite sketch.');
+  }
+};
+
+// Generate composite image for storyboard (single image with 8 panels)
+export const generateStoryboardComposite = async (
+  idea: BusinessIdea,
+  language: keyof typeof languageInstructions,
+  customDescription?: string
+): Promise<{ [key: string]: StoryboardComposite }> => {
+
+  const prompts = {
+    en: `Based on the business idea "${idea.title}: ${idea.description}", create 2 distinct variations of an 8-panel storyboard that visualizes the customer's journey.
+
+For each variation, provide 8 panel objects, each containing:
+- title: Short, descriptive title for the panel (max 5 words)
+- description: Detailed description with 3-5 bullet points. IMPORTANT: Each bullet point MUST be on a NEW LINE separated by newline characters (\\n).
+
+The output must be a JSON array containing 2 variations. Each variation is an object with a 'pages' array of 8 panel objects.
+
+${languageInstructions.en}`,
+    ko: `비즈니스 아이디어 "${idea.title}: ${idea.description}"를 바탕으로, 고객의 여정을 시각화하는 8패널 스토리보드의 2가지 버전을 만드세요.
+
+각 버전에 대해 8개의 패널 객체 제공, 각각 포함:
+- title: 짧고 설명적인 제목 (최대 5단어)
+- description: 3-5개의 불렛 포인트가 있는 상세한 설명. 중요: 각 불렛 포인트는 줄바꿈 문자(\\n)로 구분된 새로운 줄에 있어야 합니다.
+
+출력은 2개의 버전을 포함하는 JSON 배열이어야 합니다. 각 버전은 8개의 패널 객체 배열인 'pages'를 가진 객체입니다.
+
+${languageInstructions.ko}`,
+    am: `በቢዝነስ ሀሳብ "${idea.title}: ${idea.description}" ላይ በመመስረት፣ የደንበኛውን ጉዞ የሚያሳይ የ8-ፓነል ስቶሪቦርድ 2 የተለያዩ ልዩነቶችን ይፍጠሩ።
+
+ለእያንዳንዱ ልዩነት 8 የፓነል ዕቃዎች ያቅርቡ፣ እያንዳንዱ የያዘው፦
+- title: አጭር፣ ገላጭ ርዕስ (ከ5 ቃላት በታች)
+- description: በ3-5 ነጥቦች ዝርዝር መግለጫ። አስፈላጊ: እያንዳንዱ ነጥብ በመስመር መቁረጫ ቁምፊዎች (\\n) የተለየ አዲስ መስመር ላይ መሆን አለበት።
+
+ውጤቱ 2 ልዩነቶችን የያዘ JSON ድርድር መሆን አለበት። እያንዳንዱ ልዩነት በ8 የፓነል ዕቃዎች ድርድር 'pages' ያለው ዕቃ ነው።
+
+${languageInstructions.am}`
+  };
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompts[language],
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              pages: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    title: { type: Type.STRING },
+                    description: { type: Type.STRING }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const variations = JSON.parse(response.text.trim()) as { pages: { title: string; description: string }[] }[];
+
+    // Now generate composite images for each variation
+    const imagePrompts = {
+      en: `Create a WEBTOON-STYLE 8-PANEL STORYBOARD showing the customer journey: "${idea.description}".
+
+Style: HAND-DRAWN SKETCH - simple pencil drawings like workshop storyboard frames
+
+The image must show exactly 8 panels arranged in a 2x4 grid (2 columns, 4 rows) like a storyboard:
+${variations[0].pages.map((page, i) => `Panel ${i + 1}: ${page.title} - ${page.description.split('\n')[0]}`).join('\n')}
+
+Important: Create ONE SINGLE IMAGE with all 8 panels arranged in a grid. Each panel should be clearly numbered (1-8) and separated with borders. Keep the style consistent across all panels.`,
+      ko: `고객 여정을 보여주는 웹툰 스타일 8패널 스토리보드: "${idea.description}".
+
+스타일: 손그림 스케치 - 워크샵 스토리보드 프레임처럼 간단한 연필 드로잉
+
+이미지는 스토리보드처럼 2x4 그리드(2열, 4행)로 배열된 정확히 8개의 패널을 보여야 합니다:
+${variations[0].pages.map((page, i) => `패널 ${i + 1}: ${page.title} - ${page.description.split('\n')[0]}`).join('\n')}
+
+중요: 모든 8개의 패널이 그리드로 배열된 하나의 단일 이미지를 만드세요. 각 패널은 명확하게 번호가 매겨져야(1-8) 하고 테두리로 구분되어야 합니다. 모든 패널에서 일관된 스타일을 유지하세요.`,
+      am: `የደንበኛ ጉዞን የሚያሳይ የዌብቱን ዘይቤ 8-ፓነል ስቶሪቦርድ: "${idea.description}".
+
+ዘይቤ: በእጅ የተሳለ ንድፍ - እንደ ወርክሾፕ ስቶሪቦርድ ፍሬሞች ቀላል የእርሳስ ስዕሎች
+
+ምስሉ እንደ ስቶሪቦርድ በ2x4 ግሪድ (2 አምዶች፣ 4 ረድፎች) የተደረደሩ በትክክል 8 ፓነሎችን ማሳየት አለበት:
+${variations[0].pages.map((page, i) => `ፓነል ${i + 1}: ${page.title} - ${page.description.split('\n')[0]}`).join('\n')}
+
+አስፈላጊ: ሁሉም 8 ፓነሎች በግሪድ የተደረደሩ አንድ ነጠላ ምስል ይፍጠሩ። እያንዳንዱ ፓነል በግልጽ ቁጥር መሰጠት (1-8) እና በድንበሮች መለየት አለበት። በሁሉም ፓነሎች ላይ ወጥ የሆነ ዘይቤ ያቆዩ።`
+    };
+
+    const resultMap: { [key: string]: StoryboardComposite } = {};
+
+    for (let i = 0; i < variations.length; i++) {
+      try {
+        const base64Url = await generateImage(imagePrompts[language]);
+        resultMap[`v${i}`] = {
+          compositeImageUrl: base64Url,
+          pages: variations[i].pages
+        };
+      } catch (error) {
+        console.error(`Error generating composite storyboard for variation ${i}:`, error);
+        resultMap[`v${i}`] = {
+          compositeImageUrl: null,
+          pages: variations[i].pages
+        };
+      }
+    }
+
+    return resultMap;
+  } catch (error) {
+    console.error('Error generating storyboard composite:', error);
+    throw new Error('Failed to generate storyboard composite.');
+  }
 };

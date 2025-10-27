@@ -32,11 +32,27 @@ export interface SketchStep {
     imageUrl: string | null;
 }
 
+export interface ThreeStepSketchComposite {
+    compositeImageUrl: string | null;
+    steps: {
+        title: string;
+        description: string;
+    }[];
+}
+
 export interface StoryboardPage {
     title: string;
     description: string;
     imagePrompt: string;
     imageUrl: string | null;
+}
+
+export interface StoryboardComposite {
+    compositeImageUrl: string | null;
+    pages: {
+        title: string;
+        description: string;
+    }[];
 }
 
 export interface StitchPrompt {
@@ -69,10 +85,10 @@ export interface StitchPromptOptions {
 export interface ProjectData {
     businessIdeas: BusinessIdea[];
     selectedIdea: BusinessIdea | null;
-    threeStepSketches: { [key: string]: SketchStep[] } | null;
-    selectedSketch: SketchStep[] | null;
-    storyboards: { [key: string]: StoryboardPage[] } | null;
-    selectedStoryboard: StoryboardPage[] | null;
+    threeStepSketches: { [key: string]: ThreeStepSketchComposite } | null;
+    selectedSketch: ThreeStepSketchComposite | null;
+    storyboards: { [key: string]: StoryboardComposite } | null;
+    selectedStoryboard: StoryboardComposite | null;
     interviewQuestions: InterviewQuestion[];
     stitchPrompt: StitchPrompt | null;
 }
