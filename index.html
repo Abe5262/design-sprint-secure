@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Strengthening industrial and product competitiveness</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              border: 'hsl(214.3 31.8% 91.4%)',
+              input: 'hsl(214.3 31.8% 91.4%)',
+              ring: 'hsl(222.2 84% 4.9%)',
+              background: 'hsl(0 0% 100%)',
+              foreground: 'hsl(222.2 84% 4.9%)',
+              primary: {
+                DEFAULT: 'hsl(222.2 47.4% 11.2%)',
+                foreground: 'hsl(210 40% 98%)',
+              },
+              secondary: {
+                DEFAULT: 'hsl(210 40% 96.1%)',
+                foreground: 'hsl(222.2 47.4% 11.2%)',
+              },
+              destructive: {
+                DEFAULT: 'hsl(0 84.2% 60.2%)',
+                foreground: 'hsl(210 40% 98%)',
+              },
+              muted: {
+                DEFAULT: 'hsl(210 40% 96.1%)',
+                foreground: 'hsl(215.4 16.3% 46.9%)',
+              },
+              accent: {
+                DEFAULT: 'hsl(210 40% 96.1%)',
+                foreground: 'hsl(222.2 47.4% 11.2%)',
+              },
+              card: {
+                DEFAULT: 'hsl(0 0% 100%)',
+                foreground: 'hsl(222.2 84% 4.9%)',
+              },
+              day1: 'hsl(45 93% 47%)',
+              day2: 'hsl(142 76% 36%)',
+              day3: 'hsl(221 83% 53%)',
+            },
+            keyframes: {
+              "accordion-down": {
+                from: { height: "0" },
+                to: { height: "var(--radix-accordion-content-height)" },
+              },
+              "accordion-up": {
+                from: { height: "var(--radix-accordion-content-height)" },
+                to: { height: "0" },
+              },
+            },
+            animation: {
+              "accordion-down": "accordion-down 0.2s ease-out",
+              "accordion-up": "accordion-up 0.2s ease-out",
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      input:-webkit-autofill,
+      input:-webkit-autofill:hover,
+      input:-webkit-autofill:focus,
+      input:-webkit-autofill:active {
+          -webkit-text-fill-color: hsl(222.2 84% 4.9%) !important;
+          -webkit-box-shadow: 0 0 0 1000px hsl(0 0% 100%) inset !important;
+          transition: background-color 5000s ease-in-out 0s;
+      }
+    </style>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.546.0",
+    "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.4.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-slate-50 text-slate-900">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

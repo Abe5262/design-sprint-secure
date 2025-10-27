@@ -1,0 +1,7 @@
+{
+  "name": "Strengthening industrial and product competitiveness",
+  "description": "A web application that guides users through a 3-day design sprint process to develop and prototype business ideas with the help of AI. It supports idea generation, sketching, storyboarding, user testing feedback, and final prototype prompt generation.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
