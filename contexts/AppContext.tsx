@@ -73,8 +73,13 @@ export const AppContextProvider: React.FC<{ children: ReactNode }> = ({ children
           const projectRef = doc(db, 'projects', currentUser.uid);
           const projectSnap = await getDoc(projectRef);
           if (projectSnap.exists()) {
-            setProjectData(projectSnap.data() as ProjectData);
+            const data = projectSnap.data();
+            console.log('📊 Firestore Project Data:', JSON.stringify(data, null, 2));
+            console.log('🔍 threeStepSketches structure:', data.threeStepSketches);
+            console.log('🔍 storyboards structure:', data.storyboards);
+            setProjectData(data as ProjectData);
           } else {
+            console.log('⚠️ No project data found in Firestore');
             setProjectData(initialProjectData);
           }
         } else {
@@ -106,8 +111,11 @@ export const AppContextProvider: React.FC<{ children: ReactNode }> = ({ children
 
     try {
         if (updatedData) {
+            console.log('💾 Saving to Firestore:', JSON.stringify(updates, null, 2));
+            console.log('📝 Full project data:', JSON.stringify(updatedData, null, 2));
             const projectRef = doc(db, 'projects', user.uid);
             await setDoc(projectRef, updatedData, { merge: true });
+            console.log('✅ Successfully saved to Firestore');
             setLastSaved(new Date());
             addToast(
               language === 'ko' ? '저장되었습니다' :
@@ -117,7 +125,7 @@ export const AppContextProvider: React.FC<{ children: ReactNode }> = ({ children
             );
         }
     } catch (e) {
-        console.error("Error saving project data:", e);
+        console.error("❌ Error saving project data:", e);
         setError("Failed to save progress.");
         addToast(
           language === 'ko' ? '저장 실패' :

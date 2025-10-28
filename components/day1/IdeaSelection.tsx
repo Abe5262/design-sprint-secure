@@ -6,6 +6,8 @@ import { BusinessIdea } from '../../types';
 import { CheckCircle, RefreshCw } from '../lucide-react';
 import { trackEvent } from '../../lib/analytics';
 import ImageModal from '../ImageModal';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../lib/firebase';
 
 interface IdeaSelectionProps {
     onIdeaSelected: () => void;
@@ -42,6 +44,25 @@ const IdeaSelection: React.FC<IdeaSelectionProps> = ({ onIdeaSelected }) => {
     setFormState(prev => ({ ...prev, [name]: value }));
   };
 
+  // Helper function to upload base64 image to Firebase Storage
+  const uploadBase64ToStorage = async (base64Url: string, userId: string, ideaIndex: number): Promise<string> => {
+    try {
+      const timestamp = Date.now();
+      const storageRef = ref(storage, `projects/${userId}/ideas/${timestamp}_${ideaIndex}.png`);
+
+      // Upload base64 string to Firebase Storage
+      await uploadString(storageRef, base64Url, 'data_url');
+
+      // Get the download URL
+      const downloadURL = await getDownloadURL(storageRef);
+      console.log(`✅ Uploaded image ${ideaIndex} to Storage:`, downloadURL);
+      return downloadURL;
+    } catch (error) {
+      console.error(`❌ Error uploading image ${ideaIndex} to Storage:`, error);
+      throw error;
+    }
+  };
+
   const handleGenerateIdeas = async () => {
     if (!user) {
         setError("You must be logged in to generate ideas.");
@@ -68,11 +89,15 @@ const IdeaSelection: React.FC<IdeaSelectionProps> = ({ onIdeaSelected }) => {
         // Process batch in parallel with retry
         const batchResults = await Promise.all(
           batch.map(async (idea, batchIndex) => {
+            const actualIndex = i + batchIndex;
             // Retry logic: try up to 2 times
             for (let attempt = 0; attempt < 2; attempt++) {
               try {
+                // Generate base64 image
                 const base64Url = await generateImage(idea.sketchPrompt);
-                return { ...idea, sketchUrl: base64Url };
+                // Upload to Firebase Storage
+                const storageUrl = await uploadBase64ToStorage(base64Url, user.uid, actualIndex);
+                return { ...idea, sketchUrl: storageUrl };
               } catch (imageError) {
                 console.error(`Error processing image for idea "${idea.title}" (attempt ${attempt + 1}):`, imageError);
                 if (attempt === 1) {
