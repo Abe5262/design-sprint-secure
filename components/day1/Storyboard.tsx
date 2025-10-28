@@ -124,7 +124,7 @@ const Storyboard: React.FC = () => {
           <Wand2 className="w-5 h-5" />
           {isLoading ? t('loading') : t('generate.storyboard')}
         </button>
-        {projectData.storyboards && Object.keys(projectData.storyboards).length > 0 && (
+        {projectData.storyboards && projectData.storyboards.length > 0 && (
           <button
             onClick={handleRegenerate}
             disabled={isLoading}
@@ -156,16 +156,16 @@ const Storyboard: React.FC = () => {
         </div>
       )}
 
-      {projectData.storyboards && Object.keys(projectData.storyboards).length > 0 && (
+      {projectData.storyboards && projectData.storyboards.length > 0 && (
         <div>
           <h3 className="text-2xl font-semibold mb-4 text-foreground">{t('storyboard.variations')}</h3>
           <div className="grid md:grid-cols-2 gap-6">
-            {Object.entries(projectData.storyboards).map(([vKey, composite]) => {
+            {projectData.storyboards.map((composite, index) => {
               const isSelected = JSON.stringify(projectData.selectedStoryboard) === JSON.stringify(composite);
 
               return (
                 <div
-                  key={vKey}
+                  key={index}
                   className={`rounded-lg bg-card shadow-sm transition-all duration-200 ${
                     isSelected ? 'border-2 border-day2 ring-4 ring-day2/20' : 'border border-border'
                   }`}
@@ -173,11 +173,11 @@ const Storyboard: React.FC = () => {
                   {composite.compositeImageUrl ? (
                     <div
                       className="w-full cursor-pointer hover:opacity-90 transition-opacity p-4"
-                      onClick={() => setModalImage({ url: composite.compositeImageUrl!, alt: `Storyboard ${vKey}` })}
+                      onClick={() => setModalImage({ url: composite.compositeImageUrl!, alt: `Storyboard ${index + 1}` })}
                     >
                       <img
                         src={composite.compositeImageUrl}
-                        alt={`Storyboard ${vKey}`}
+                        alt={`Storyboard ${index + 1}`}
                         className="w-full rounded-md bg-white shadow-inner"
                       />
                     </div>

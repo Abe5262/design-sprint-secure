@@ -85,9 +85,9 @@ export interface StitchPromptOptions {
 export interface ProjectData {
     businessIdeas: BusinessIdea[];
     selectedIdea: BusinessIdea | null;
-    threeStepSketches: { [key: string]: ThreeStepSketchComposite } | null;
+    threeStepSketches: ThreeStepSketchComposite[] | null;
     selectedSketch: ThreeStepSketchComposite | null;
-    storyboards: { [key: string]: StoryboardComposite } | null;
+    storyboards: StoryboardComposite[] | null;
     selectedStoryboard: StoryboardComposite | null;
     interviewQuestions: InterviewQuestion[];
     stitchPrompt: StitchPrompt | null;

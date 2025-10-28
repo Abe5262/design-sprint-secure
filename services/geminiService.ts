@@ -732,7 +732,7 @@ export const generateThreeStepComposite = async (
   idea: BusinessIdea,
   language: keyof typeof languageInstructions,
   sketchStyle: 'simple' | 'professional' = 'simple'
-): Promise<{ [key: string]: ThreeStepSketchComposite }> => {
+): Promise<ThreeStepSketchComposite[]> => {
 
   const styleInstructions = {
     simple: {
@@ -815,7 +815,7 @@ ${languageInstructions.am}`
 
     const variations = JSON.parse(response.text.trim()) as { steps: { title: string; description: string }[] }[];
 
-    const resultMap: { [key: string]: ThreeStepSketchComposite } = {};
+    const resultArray: ThreeStepSketchComposite[] = [];
 
     // Generate composite images for each variation
     for (let i = 0; i < variations.length; i++) {
@@ -863,20 +863,20 @@ Important: Create ONE SINGLE IMAGE with all 3 panels arranged vertically like a 
 
       try {
         const base64Url = await generateImage(imagePrompts[language]);
-        resultMap[`v${i}`] = {
+        resultArray.push({
           compositeImageUrl: base64Url,
           steps: variation.steps
-        };
+        });
       } catch (error) {
         console.error(`Error generating composite image for variation ${i}:`, error);
-        resultMap[`v${i}`] = {
+        resultArray.push({
           compositeImageUrl: null,
           steps: variation.steps
-        };
+        });
       }
     }
 
-    return resultMap;
+    return resultArray;
   } catch (error) {
     console.error('Error generating 3-step composite:', error);
     throw new Error('Failed to generate 3-step composite sketch.');
@@ -888,7 +888,7 @@ export const generateStoryboardComposite = async (
   idea: BusinessIdea,
   language: keyof typeof languageInstructions,
   customDescription?: string
-): Promise<{ [key: string]: StoryboardComposite }> => {
+): Promise<StoryboardComposite[]> => {
 
   const prompts = {
     en: `Based on the business idea "${idea.title}: ${idea.description}", create ONE 8-panel storyboard that visualizes the customer's journey.
@@ -949,7 +949,7 @@ ${languageInstructions.am}`
 
     const variations = JSON.parse(response.text.trim()) as { pages: { title: string; description: string }[] }[];
 
-    const resultMap: { [key: string]: StoryboardComposite } = {};
+    const resultArray: StoryboardComposite[] = [];
 
     // Helper function to safely get first line of description
     const getFirstLine = (desc: string) => {
@@ -1006,20 +1006,20 @@ ${variation.pages.map((page, idx) => `${page.title} - ${getFirstLine(page.descri
 
       try {
         const base64Url = await generateImage(imagePrompts[language]);
-        resultMap[`v${i}`] = {
+        resultArray.push({
           compositeImageUrl: base64Url,
           pages: variation.pages
-        };
+        });
       } catch (error) {
         console.error(`Error generating composite storyboard for variation ${i}:`, error);
-        resultMap[`v${i}`] = {
+        resultArray.push({
           compositeImageUrl: null,
           pages: variation.pages
-        };
+        });
       }
     }
 
-    return resultMap;
+    return resultArray;
   } catch (error) {
     console.error('Error generating storyboard composite:', error);
     throw new Error('Failed to generate storyboard composite.');

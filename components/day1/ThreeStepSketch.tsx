@@ -164,7 +164,7 @@ const ThreeStepSketch: React.FC<ThreeStepSketchProps> = ({ onSketchSelected }) =
           <Wand2 className="w-5 h-5" />
           {isLoading ? t('loading') : t('generate.sketch')}
         </button>
-        {projectData.threeStepSketches && Object.keys(projectData.threeStepSketches).length > 0 && (
+        {projectData.threeStepSketches && projectData.threeStepSketches.length > 0 && (
           <button
             onClick={handleRegenerate}
             disabled={isLoading}
@@ -196,16 +196,16 @@ const ThreeStepSketch: React.FC<ThreeStepSketchProps> = ({ onSketchSelected }) =
         </div>
       )}
 
-      {projectData.threeStepSketches && Object.keys(projectData.threeStepSketches).length > 0 && (
+      {projectData.threeStepSketches && projectData.threeStepSketches.length > 0 && (
         <div>
           <h3 className="text-2xl font-semibold mb-4 text-foreground">{t('three.step.variations')}</h3>
           <div className="grid md:grid-cols-3 gap-6">
-            {Object.entries(projectData.threeStepSketches).map(([vKey, composite]) => {
+            {projectData.threeStepSketches.map((composite, index) => {
               const isSelected = JSON.stringify(projectData.selectedSketch) === JSON.stringify(composite);
 
               return (
                 <div
-                  key={vKey}
+                  key={index}
                   className={`rounded-lg bg-card shadow-sm transition-all duration-200 ${
                     isSelected ? 'border-2 border-day1 ring-4 ring-day1/20' : 'border border-border'
                   }`}
@@ -213,11 +213,11 @@ const ThreeStepSketch: React.FC<ThreeStepSketchProps> = ({ onSketchSelected }) =
                   {composite.compositeImageUrl ? (
                     <div
                       className="w-full cursor-pointer hover:opacity-90 transition-opacity p-4"
-                      onClick={() => setModalImage({ url: composite.compositeImageUrl!, alt: `3-Step Sketch ${vKey}` })}
+                      onClick={() => setModalImage({ url: composite.compositeImageUrl!, alt: `3-Step Sketch ${index + 1}` })}
                     >
                       <img
                         src={composite.compositeImageUrl}
-                        alt={`3-Step Sketch ${vKey}`}
+                        alt={`3-Step Sketch ${index + 1}`}
                         className="w-full rounded-md bg-white shadow-inner"
                       />
                     </div>
