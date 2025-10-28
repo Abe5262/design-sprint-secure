@@ -891,31 +891,31 @@ export const generateStoryboardComposite = async (
 ): Promise<{ [key: string]: StoryboardComposite }> => {
 
   const prompts = {
-    en: `Based on the business idea "${idea.title}: ${idea.description}", create 2 distinct variations of an 8-panel storyboard that visualizes the customer's journey.
+    en: `Based on the business idea "${idea.title}: ${idea.description}", create ONE 8-panel storyboard that visualizes the customer's journey.
 
-For each variation, provide 8 panel objects, each containing:
+Provide 8 panel objects, each containing:
 - title: Short, descriptive title for the panel (max 5 words)
-- description: Detailed description with 3-5 bullet points. IMPORTANT: Each bullet point MUST be on a NEW LINE separated by newline characters (\\n).
+- description: VERY DETAILED description with 5-8 bullet points explaining the scene, user emotions, actions, context, and key moments. IMPORTANT: Each bullet point MUST be on a NEW LINE separated by newline characters (\\n). Be specific and vivid in your descriptions.
 
-The output must be a JSON array containing 2 variations. Each variation is an object with a 'pages' array of 8 panel objects.
+The output must be a JSON array containing 1 variation. The variation is an object with a 'pages' array of 8 panel objects.
 
 ${languageInstructions.en}`,
-    ko: `비즈니스 아이디어 "${idea.title}: ${idea.description}"를 바탕으로, 고객의 여정을 시각화하는 8패널 스토리보드의 2가지 버전을 만드세요.
+    ko: `비즈니스 아이디어 "${idea.title}: ${idea.description}"를 바탕으로, 고객의 여정을 시각화하는 8패널 스토리보드 1개를 만드세요.
 
-각 버전에 대해 8개의 패널 객체 제공, 각각 포함:
+8개의 패널 객체 제공, 각각 포함:
 - title: 짧고 설명적인 제목 (최대 5단어)
-- description: 3-5개의 불렛 포인트가 있는 상세한 설명. 중요: 각 불렛 포인트는 줄바꿈 문자(\\n)로 구분된 새로운 줄에 있어야 합니다.
+- description: 장면, 사용자 감정, 행동, 맥락, 주요 순간을 설명하는 5-8개의 불렛 포인트가 있는 매우 상세한 설명. 중요: 각 불렛 포인트는 줄바꿈 문자(\\n)로 구분된 새로운 줄에 있어야 합니다. 구체적이고 생생하게 설명하세요.
 
-출력은 2개의 버전을 포함하는 JSON 배열이어야 합니다. 각 버전은 8개의 패널 객체 배열인 'pages'를 가진 객체입니다.
+출력은 1개의 버전을 포함하는 JSON 배열이어야 합니다. 버전은 8개의 패널 객체 배열인 'pages'를 가진 객체입니다.
 
 ${languageInstructions.ko}`,
-    am: `በቢዝነስ ሀሳብ "${idea.title}: ${idea.description}" ላይ በመመስረት፣ የደንበኛውን ጉዞ የሚያሳይ የ8-ፓነል ስቶሪቦርድ 2 የተለያዩ ልዩነቶችን ይፍጠሩ።
+    am: `በቢዝነስ ሀሳብ "${idea.title}: ${idea.description}" ላይ በመመስረት፣ የደንበኛውን ጉዞ የሚያሳይ የ8-ፓነል ስቶሪቦርድ 1 ይፍጠሩ።
 
-ለእያንዳንዱ ልዩነት 8 የፓነል ዕቃዎች ያቅርቡ፣ እያንዳንዱ የያዘው፦
+8 የፓነል ዕቃዎች ያቅርቡ፣ እያንዳንዱ የያዘው፦
 - title: አጭር፣ ገላጭ ርዕስ (ከ5 ቃላት በታች)
-- description: በ3-5 ነጥቦች ዝርዝር መግለጫ። አስፈላጊ: እያንዳንዱ ነጥብ በመስመር መቁረጫ ቁምፊዎች (\\n) የተለየ አዲስ መስመር ላይ መሆን አለበት።
+- description: ትዕይንት፣ የተጠቃሚ ስሜቶች፣ ድርጊቶች፣ አውድ እና ቁልፍ ጊዜያትን የሚያብራራ በ5-8 ነጥቦች በጣም ዝርዝር መግለጫ። አስፈላጊ: እያንዳንዱ ነጥብ በመስመር መቁረጫ ቁምፊዎች (\\n) የተለየ አዲስ መስመር ላይ መሆን አለበት። ልዩ እና ግልጽ ይግለጹ።
 
-ውጤቱ 2 ልዩነቶችን የያዘ JSON ድርድር መሆን አለበት። እያንዳንዱ ልዩነት በ8 የፓነል ዕቃዎች ድርድር 'pages' ያለው ዕቃ ነው።
+ውጤቱ 1 ልዩነትን የያዘ JSON ድርድር መሆን አለበት። ልዩነቱ በ8 የፓነል ዕቃዎች ድርድር 'pages' ያለው ዕቃ ነው።
 
 ${languageInstructions.am}`
   };
@@ -963,30 +963,45 @@ ${languageInstructions.am}`
       const variation = variations[i];
 
       const imagePrompts = {
-        en: `Create a WEBTOON-STYLE 8-PANEL STORYBOARD showing the customer journey: "${idea.description}".
+        en: `Create a LARGE WEBTOON-STYLE 8-PANEL STORYBOARD showing the customer journey: "${idea.description}".
 
 Style: HAND-DRAWN SKETCH - simple pencil drawings like workshop storyboard frames
 
 The image must show exactly 8 panels arranged in a 2x4 grid (2 columns, 4 rows) like a storyboard:
-${variation.pages.map((page, idx) => `Panel ${idx + 1}: ${page.title} - ${getFirstLine(page.description)}`).join('\n')}
+${variation.pages.map((page, idx) => `${page.title} - ${getFirstLine(page.description)}`).join('\n')}
 
-Important: Create ONE SINGLE IMAGE with all 8 panels arranged in a grid. Each panel should be clearly numbered (1-8) and separated with borders. Keep the style consistent across all panels.`,
-        ko: `고객 여정을 보여주는 웹툰 스타일 8패널 스토리보드: "${idea.description}".
+Important:
+- Create ONE SINGLE LARGE IMAGE with all 8 panels arranged in a grid
+- DO NOT add numbers to the panels - just show the scenes
+- Each panel should be separated with clear borders
+- Keep the style consistent and simple across all panels
+- Make the image large and clear`,
+        ko: `고객 여정을 보여주는 큰 웹툰 스타일 8패널 스토리보드: "${idea.description}".
 
 스타일: 손그림 스케치 - 워크샵 스토리보드 프레임처럼 간단한 연필 드로잉
 
 이미지는 스토리보드처럼 2x4 그리드(2열, 4행)로 배열된 정확히 8개의 패널을 보여야 합니다:
-${variation.pages.map((page, idx) => `패널 ${idx + 1}: ${page.title} - ${getFirstLine(page.description)}`).join('\n')}
+${variation.pages.map((page, idx) => `${page.title} - ${getFirstLine(page.description)}`).join('\n')}
 
-중요: 모든 8개의 패널이 그리드로 배열된 하나의 단일 이미지를 만드세요. 각 패널은 명확하게 번호가 매겨져야(1-8) 하고 테두리로 구분되어야 합니다. 모든 패널에서 일관된 스타일을 유지하세요.`,
-        am: `የደንበኛ ጉዞን የሚያሳይ የዌብቱን ዘይቤ 8-ፓነል ስቶሪቦርድ: "${idea.description}".
+중요사항:
+- 모든 8개의 패널이 그리드로 배열된 하나의 크고 단일한 이미지를 만드세요
+- 패널에 번호를 추가하지 마세요 - 장면만 보여주세요
+- 각 패널은 명확한 테두리로 구분되어야 합니다
+- 모든 패널에서 일관되고 간단한 스타일을 유지하세요
+- 이미지를 크고 선명하게 만드세요`,
+        am: `የደንበኛ ጉዞን የሚያሳይ ትልቅ የዌብቱን ዘይቤ 8-ፓነል ስቶሪቦርድ: "${idea.description}".
 
 ዘይቤ: በእጅ የተሳለ ንድፍ - እንደ ወርክሾፕ ስቶሪቦርድ ፍሬሞች ቀላል የእርሳስ ስዕሎች
 
 ምስሉ እንደ ስቶሪቦርድ በ2x4 ግሪድ (2 አምዶች፣ 4 ረድፎች) የተደረደሩ በትክክል 8 ፓነሎችን ማሳየት አለበት:
-${variation.pages.map((page, idx) => `ፓነል ${idx + 1}: ${page.title} - ${getFirstLine(page.description)}`).join('\n')}
+${variation.pages.map((page, idx) => `${page.title} - ${getFirstLine(page.description)}`).join('\n')}
 
-አስፈላጊ: ሁሉም 8 ፓነሎች በግሪድ የተደረደሩ አንድ ነጠላ ምስል ይፍጠሩ። እያንዳንዱ ፓነል በግልጽ ቁጥር መሰጠት (1-8) እና በድንበሮች መለየት አለበት። በሁሉም ፓነሎች ላይ ወጥ የሆነ ዘይቤ ያቆዩ።`
+አስፈላጊ:
+- ሁሉም 8 ፓነሎች በግሪድ የተደረደሩ አንድ ትልቅ ነጠላ ምስል ይፍጠሩ
+- ቁጥሮችን ወደ ፓነሎች አያክሉ - ትዕይንቶችን ብቻ ያሳዩ
+- እያንዳንዱ ፓነል በግልጽ ድንበሮች መለየት አለበት
+- በሁሉም ፓነሎች ላይ ወጥ እና ቀላል ዘይቤ ያቆዩ
+- ምስሉን ትልቅ እና ግልጽ ያድርጉት`
       };
 
       try {

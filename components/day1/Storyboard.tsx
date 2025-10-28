@@ -31,11 +31,11 @@ const Storyboard: React.FC = () => {
       trackEvent('Generate Storyboard', 'Day 1 - Storyboarding', `Idea: ${projectData.selectedIdea.title}`);
 
       try {
-        // Generate composite storyboards (2 variations with composite images)
+        // Generate composite storyboard (1 variation with composite image)
         setGenerationProgress({
           current: 0,
-          total: 2,
-          stage: language === 'ko' ? '스토리보드 생성 중...' : language === 'am' ? 'የታሪክ ሰሌዳ በመፍጠር ላይ...' : 'Generating storyboards...'
+          total: 1,
+          stage: language === 'ko' ? '스토리보드 생성 중...' : language === 'am' ? 'የታሪክ ሰሌዳ በመፍጠር ላይ...' : 'Generating storyboard...'
         });
 
         const compositeVariations = await generateStoryboardComposite(
