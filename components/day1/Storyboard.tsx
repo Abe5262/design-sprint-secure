@@ -29,6 +29,7 @@ const Storyboard: React.FC = () => {
       setIsLoading(true);
       setError(null);
       trackEvent('Generate Storyboard', 'Day 1 - Storyboarding', `Idea: ${projectData.selectedIdea.title}`);
+
       try {
         // Generate composite storyboards (2 variations with composite images)
         setGenerationProgress({
@@ -44,13 +45,14 @@ const Storyboard: React.FC = () => {
         );
 
         await updateProjectData({ storyboards: compositeVariations, selectedStoryboard: null });
-        setGenerationProgress({ current: 0, total: 0, stage: '' });
-        setIsLoading(false);
 
       } catch (err) {
+        console.error('Error in handleGenerate:', err);
         setError(err instanceof Error ? err.message : String(err));
-        setIsLoading(false);
+      } finally {
+        // Always reset loading state
         setGenerationProgress({ current: 0, total: 0, stage: '' });
+        setIsLoading(false);
       }
     }
   };

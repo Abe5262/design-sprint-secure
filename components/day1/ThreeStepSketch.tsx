@@ -35,6 +35,7 @@ const ThreeStepSketch: React.FC<ThreeStepSketchProps> = ({ onSketchSelected }) =
       setIsLoading(true);
       setError(null);
       trackEvent('Generate Sketch', 'Day 1 - Sketching', `Idea: ${editableIdea.title}`);
+
       try {
         if (JSON.stringify(editableIdea) !== JSON.stringify(projectData.selectedIdea)) {
             await updateProjectData({ selectedIdea: editableIdea });
@@ -50,13 +51,14 @@ const ThreeStepSketch: React.FC<ThreeStepSketchProps> = ({ onSketchSelected }) =
         const compositeVariations = await generateThreeStepComposite(editableIdea, language, sketchStyle);
 
         await updateProjectData({ threeStepSketches: compositeVariations, selectedSketch: null });
-        setGenerationProgress({ current: 0, total: 0, stage: '' });
-        setIsLoading(false);
 
       } catch (err) {
+        console.error('Error in handleGenerate:', err);
         setError(err instanceof Error ? err.message : String(err));
-        setIsLoading(false);
+      } finally {
+        // Always reset loading state
         setGenerationProgress({ current: 0, total: 0, stage: '' });
+        setIsLoading(false);
       }
     }
   };
