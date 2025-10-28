@@ -99,6 +99,32 @@ export const AppContextProvider: React.FC<{ children: ReactNode }> = ({ children
     return () => unsubscribe();
   }, []);
   
+  // Helper function to sanitize data for Firestore (remove undefined, functions, Blobs, etc.)
+  const sanitizeForFirestore = (data: any): any => {
+    if (data === null) return null;
+    if (data === undefined) return null;
+    if (typeof data === 'function') return null;
+    if (data instanceof Blob) return null; // Remove Blob objects
+    if (data instanceof File) return null; // Remove File objects
+
+    if (Array.isArray(data)) {
+      return data.map(item => sanitizeForFirestore(item)).filter(item => item !== null);
+    }
+
+    if (typeof data === 'object') {
+      const sanitized: any = {};
+      for (const key in data) {
+        const value = sanitizeForFirestore(data[key]);
+        if (value !== null) {
+          sanitized[key] = value;
+        }
+      }
+      return sanitized;
+    }
+
+    return data;
+  };
+
   const updateProjectData = async (updates: Partial<ProjectData>) => {
     if (!user) return;
 
@@ -113,8 +139,13 @@ export const AppContextProvider: React.FC<{ children: ReactNode }> = ({ children
         if (updatedData) {
             console.log('💾 Saving to Firestore:', JSON.stringify(updates, null, 2));
             console.log('📝 Full project data:', JSON.stringify(updatedData, null, 2));
+
+            // Sanitize data before saving to Firestore
+            const sanitizedData = sanitizeForFirestore(updatedData);
+            console.log('🧹 Sanitized data:', JSON.stringify(sanitizedData, null, 2));
+
             const projectRef = doc(db, 'projects', user.uid);
-            await setDoc(projectRef, updatedData, { merge: true });
+            await setDoc(projectRef, sanitizedData, { merge: true });
             console.log('✅ Successfully saved to Firestore');
             setLastSaved(new Date());
             addToast(
