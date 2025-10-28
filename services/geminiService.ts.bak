@@ -12,20 +12,7 @@ const languageInstructions = {
   am: 'በአማርኛ ብቻ መልስ ይስጡ. ለ JSON የማርክዳাউন ቅርጸትን አታካትት።',
 };
 
-
-// Helper function to upload base64 image to Firebase Storage
-const uploadBase64ToStorage = async (base64Url: string, path: string): Promise<string> => {
-  try {
-    const storageRef = ref(storage, path);
-    await uploadString(storageRef, base64Url, 'data_url');
-    const downloadURL = await getDownloadURL(storageRef);
-    console.log(`✅ Uploaded image to Storage: ${path}`);
-    return downloadURL;
-  } catch (error) {
-    console.error(`❌ Error uploading image to Storage (${path}):`, error);
-    throw error;
-  }
-};export const generateBusinessIdeas = async (
+export const generateBusinessIdeas = async (
   skills: string,
   target: string,
   needs: string,
@@ -879,22 +866,10 @@ Important: Create ONE SINGLE IMAGE with all 3 panels arranged vertically like a 
 
       try {
         const base64Url = await generateImage(imagePrompts[language]);
-        // Upload to Firebase Storage
-        const user = auth.currentUser;
-        if (user) {
-          const timestamp = Date.now();
-          const storagePath = `projects/${user.uid}/sketches/${timestamp}_v${i}.png`;
-          const storageUrl = await uploadBase64ToStorage(base64Url, storagePath);
-          resultArray.push({
-            compositeImageUrl: storageUrl,
-            steps: variation.steps
-          });
-        } else {
-          resultArray.push({
-            compositeImageUrl: base64Url,
-            steps: variation.steps
-          });
-        }
+        resultArray.push({
+          compositeImageUrl: base64Url,
+          steps: variation.steps
+        });
       } catch (error) {
         console.error(`Error generating composite image for variation ${i}:`, error);
         resultArray.push({
@@ -1034,22 +1009,10 @@ ${variation.pages.map((page, idx) => `${page.title} - ${getFirstLine(page.descri
 
       try {
         const base64Url = await generateImage(imagePrompts[language]);
-        // Upload to Firebase Storage
-        const user = auth.currentUser;
-        if (user) {
-          const timestamp = Date.now();
-          const storagePath = `projects/${user.uid}/storyboards/${timestamp}_v${i}.png`;
-          const storageUrl = await uploadBase64ToStorage(base64Url, storagePath);
-          resultArray.push({
-            compositeImageUrl: storageUrl,
-            pages: variation.pages
-          });
-        } else {
-          resultArray.push({
-            compositeImageUrl: base64Url,
-            pages: variation.pages
-          });
-        }
+        resultArray.push({
+          compositeImageUrl: base64Url,
+          pages: variation.pages
+        });
       } catch (error) {
         console.error(`Error generating composite storyboard for variation ${i}:`, error);
         resultArray.push({
