@@ -815,54 +815,63 @@ ${languageInstructions.am}`
 
     const variations = JSON.parse(response.text.trim()) as { steps: { title: string; description: string }[] }[];
 
-    // Now generate composite images for each variation
-    const imagePrompts = {
-      en: `Create a WEBTOON-STYLE 3-PANEL COMIC STRIP showing the user journey: "${idea.description}".
+    const resultMap: { [key: string]: ThreeStepSketchComposite } = {};
+
+    // Generate composite images for each variation
+    for (let i = 0; i < variations.length; i++) {
+      const variation = variations[i];
+
+      // Helper function to safely get first line of description
+      const getFirstLine = (desc: string) => {
+        if (!desc) return '';
+        const lines = desc.split('\n');
+        return lines[0] || desc.substring(0, 100);
+      };
+
+      const imagePrompts = {
+        en: `Create a WEBTOON-STYLE 3-PANEL COMIC STRIP showing the user journey: "${idea.description}".
 
 Style: ${styleInstructions[sketchStyle].en}
 
 The image must show exactly 3 vertical panels arranged like a webtoon/comic:
-Panel 1 (Top): ${variations[0].steps[0].title} - ${variations[0].steps[0].description.split('\n')[0]}
-Panel 2 (Middle): ${variations[0].steps[1].title} - ${variations[0].steps[1].description.split('\n')[0]}
-Panel 3 (Bottom): ${variations[0].steps[2].title} - ${variations[0].steps[2].description.split('\n')[0]}
+Panel 1 (Top): ${variation.steps[0].title} - ${getFirstLine(variation.steps[0].description)}
+Panel 2 (Middle): ${variation.steps[1].title} - ${getFirstLine(variation.steps[1].description)}
+Panel 3 (Bottom): ${variation.steps[2].title} - ${getFirstLine(variation.steps[2].description)}
 
 Important: Create ONE SINGLE IMAGE with all 3 panels arranged vertically like a webtoon. Each panel should be clearly separated with borders or space. Include panel numbers (1, 2, 3) in each panel.`,
-      ko: `사용자 여정을 보여주는 웹툰 스타일 3패널 만화: "${idea.description}".
+        ko: `사용자 여정을 보여주는 웹툰 스타일 3패널 만화: "${idea.description}".
 
 스타일: ${styleInstructions[sketchStyle].ko}
 
 이미지는 웹툰/만화처럼 배열된 정확히 3개의 수직 패널을 보여야 합니다:
-패널 1 (상단): ${variations[0].steps[0].title} - ${variations[0].steps[0].description.split('\n')[0]}
-패널 2 (중간): ${variations[0].steps[1].title} - ${variations[0].steps[1].description.split('\n')[0]}
-패널 3 (하단): ${variations[0].steps[2].title} - ${variations[0].steps[2].description.split('\n')[0]}
+패널 1 (상단): ${variation.steps[0].title} - ${getFirstLine(variation.steps[0].description)}
+패널 2 (중간): ${variation.steps[1].title} - ${getFirstLine(variation.steps[1].description)}
+패널 3 (하단): ${variation.steps[2].title} - ${getFirstLine(variation.steps[2].description)}
 
 중요: 웹툰처럼 3개의 패널이 모두 수직으로 배열된 하나의 단일 이미지를 만드세요. 각 패널은 테두리나 공간으로 명확하게 구분되어야 합니다. 각 패널에 패널 번호(1, 2, 3)를 포함하세요.`,
-      am: `የተጠቃሚ ጉዞን የሚያሳይ የዌብቱን ዘይቤ 3-ፓነል ኮሚክ: "${idea.description}".
+        am: `የተጠቃሚ ጉዞን የሚያሳይ የዌብቱን ዘይቤ 3-ፓነል ኮሚክ: "${idea.description}".
 
 ዘይቤ: ${styleInstructions[sketchStyle].am}
 
 ምስሉ እንደ ዌብቱን/ኮሚክ የተደረደሩ በትክክል 3 ቁመታዊ ፓነሎችን ማሳየት አለበት:
-ፓነል 1 (ላይኛው): ${variations[0].steps[0].title} - ${variations[0].steps[0].description.split('\n')[0]}
-ፓነል 2 (መካከለኛ): ${variations[0].steps[1].title} - ${variations[0].steps[1].description.split('\n')[0]}
-ፓነል 3 (ታች): ${variations[0].steps[2].title} - ${variations[0].steps[2].description.split('\n')[0]}
+ፓነል 1 (ላይኛው): ${variation.steps[0].title} - ${getFirstLine(variation.steps[0].description)}
+ፓነል 2 (መካከለኛ): ${variation.steps[1].title} - ${getFirstLine(variation.steps[1].description)}
+ፓነል 3 (ታች): ${variation.steps[2].title} - ${getFirstLine(variation.steps[2].description)}
 
 አስፈላጊ: እንደ ዌብቱን ሁሉም 3 ፓነሎች በቁመት የተደረደሩ አንድ ነጠላ ምስል ይፍጠሩ። እያንዳንዱ ፓነል በድንበሮች ወይም ቦታ በግልጽ መለየት አለበት። በእያንዳንዱ ፓነል ውስጥ የፓነል ቁጥሮች (1, 2, 3) ያካትቱ።`
-    };
+      };
 
-    const resultMap: { [key: string]: ThreeStepSketchComposite } = {};
-
-    for (let i = 0; i < variations.length; i++) {
       try {
         const base64Url = await generateImage(imagePrompts[language]);
         resultMap[`v${i}`] = {
           compositeImageUrl: base64Url,
-          steps: variations[i].steps
+          steps: variation.steps
         };
       } catch (error) {
         console.error(`Error generating composite image for variation ${i}:`, error);
         resultMap[`v${i}`] = {
           compositeImageUrl: null,
-          steps: variations[i].steps
+          steps: variation.steps
         };
       }
     }
@@ -940,48 +949,57 @@ ${languageInstructions.am}`
 
     const variations = JSON.parse(response.text.trim()) as { pages: { title: string; description: string }[] }[];
 
-    // Now generate composite images for each variation
-    const imagePrompts = {
-      en: `Create a WEBTOON-STYLE 8-PANEL STORYBOARD showing the customer journey: "${idea.description}".
+    const resultMap: { [key: string]: StoryboardComposite } = {};
+
+    // Helper function to safely get first line of description
+    const getFirstLine = (desc: string) => {
+      if (!desc) return '';
+      const lines = desc.split('\n');
+      return lines[0] || desc.substring(0, 100);
+    };
+
+    // Generate composite images for each variation
+    for (let i = 0; i < variations.length; i++) {
+      const variation = variations[i];
+
+      const imagePrompts = {
+        en: `Create a WEBTOON-STYLE 8-PANEL STORYBOARD showing the customer journey: "${idea.description}".
 
 Style: HAND-DRAWN SKETCH - simple pencil drawings like workshop storyboard frames
 
 The image must show exactly 8 panels arranged in a 2x4 grid (2 columns, 4 rows) like a storyboard:
-${variations[0].pages.map((page, i) => `Panel ${i + 1}: ${page.title} - ${page.description.split('\n')[0]}`).join('\n')}
+${variation.pages.map((page, idx) => `Panel ${idx + 1}: ${page.title} - ${getFirstLine(page.description)}`).join('\n')}
 
 Important: Create ONE SINGLE IMAGE with all 8 panels arranged in a grid. Each panel should be clearly numbered (1-8) and separated with borders. Keep the style consistent across all panels.`,
-      ko: `고객 여정을 보여주는 웹툰 스타일 8패널 스토리보드: "${idea.description}".
+        ko: `고객 여정을 보여주는 웹툰 스타일 8패널 스토리보드: "${idea.description}".
 
 스타일: 손그림 스케치 - 워크샵 스토리보드 프레임처럼 간단한 연필 드로잉
 
 이미지는 스토리보드처럼 2x4 그리드(2열, 4행)로 배열된 정확히 8개의 패널을 보여야 합니다:
-${variations[0].pages.map((page, i) => `패널 ${i + 1}: ${page.title} - ${page.description.split('\n')[0]}`).join('\n')}
+${variation.pages.map((page, idx) => `패널 ${idx + 1}: ${page.title} - ${getFirstLine(page.description)}`).join('\n')}
 
 중요: 모든 8개의 패널이 그리드로 배열된 하나의 단일 이미지를 만드세요. 각 패널은 명확하게 번호가 매겨져야(1-8) 하고 테두리로 구분되어야 합니다. 모든 패널에서 일관된 스타일을 유지하세요.`,
-      am: `የደንበኛ ጉዞን የሚያሳይ የዌብቱን ዘይቤ 8-ፓነል ስቶሪቦርድ: "${idea.description}".
+        am: `የደንበኛ ጉዞን የሚያሳይ የዌብቱን ዘይቤ 8-ፓነል ስቶሪቦርድ: "${idea.description}".
 
 ዘይቤ: በእጅ የተሳለ ንድፍ - እንደ ወርክሾፕ ስቶሪቦርድ ፍሬሞች ቀላል የእርሳስ ስዕሎች
 
 ምስሉ እንደ ስቶሪቦርድ በ2x4 ግሪድ (2 አምዶች፣ 4 ረድፎች) የተደረደሩ በትክክል 8 ፓነሎችን ማሳየት አለበት:
-${variations[0].pages.map((page, i) => `ፓነል ${i + 1}: ${page.title} - ${page.description.split('\n')[0]}`).join('\n')}
+${variation.pages.map((page, idx) => `ፓነል ${idx + 1}: ${page.title} - ${getFirstLine(page.description)}`).join('\n')}
 
 አስፈላጊ: ሁሉም 8 ፓነሎች በግሪድ የተደረደሩ አንድ ነጠላ ምስል ይፍጠሩ። እያንዳንዱ ፓነል በግልጽ ቁጥር መሰጠት (1-8) እና በድንበሮች መለየት አለበት። በሁሉም ፓነሎች ላይ ወጥ የሆነ ዘይቤ ያቆዩ።`
-    };
+      };
 
-    const resultMap: { [key: string]: StoryboardComposite } = {};
-
-    for (let i = 0; i < variations.length; i++) {
       try {
         const base64Url = await generateImage(imagePrompts[language]);
         resultMap[`v${i}`] = {
           compositeImageUrl: base64Url,
-          pages: variations[i].pages
+          pages: variation.pages
         };
       } catch (error) {
         console.error(`Error generating composite storyboard for variation ${i}:`, error);
         resultMap[`v${i}`] = {
           compositeImageUrl: null,
-          pages: variations[i].pages
+          pages: variation.pages
         };
       }
     }
